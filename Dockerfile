@@ -1,20 +1,25 @@
 FROM node:24.11.1-alpine AS build
 WORKDIR /app
 COPY package*.json ./
+COPY prisma.config.ts ./
+COPY prisma ./prisma
+ENV DATABASE_URL=postgresql://build:build@localhost:5432/build
 RUN npm ci
 COPY . .
-ENV DATABASE_URL=postgresql://build:build@localhost:5432/build
-RUN npm run prisma:generate && npm run build
+RUN npm run build
 
 FROM node:24.11.1-alpine AS production
 WORKDIR /app
 ENV NODE_ENV=production PORT=3000
 COPY package*.json ./
+COPY prisma.config.ts ./
+COPY prisma ./prisma
+ENV DATABASE_URL=postgresql://build:build@localhost:5432/build
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/build-server ./build-server
+COPY --from=build /app/server ./server
+COPY --from=build /app/shared ./shared
 COPY --from=build /app/prisma ./prisma
-COPY --from=build /app/prisma.config.ts ./prisma.config.ts
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x docker-entrypoint.sh
 EXPOSE 3000

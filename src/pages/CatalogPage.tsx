@@ -13,9 +13,12 @@ const sorts = [
 export default function CatalogPage() {
   const [params, setParams] = useSearchParams();
   const q = params.get('q') ?? '';
-  const category = params.get('category') ?? '';
-  const sort = params.get('sort') ?? 'relevance';
-  const page = Number(params.get('page') ?? 1);
+  const rawCategory = params.get('category') ?? '';
+  const category = categories.includes(rawCategory) ? rawCategory : '';
+  const rawSort = params.get('sort') ?? 'relevance';
+  const sort = sorts.some(([value]) => value === rawSort) ? rawSort : 'relevance';
+  const rawPage = Number.parseInt(params.get('page') ?? '1', 10);
+  const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
   const update = (key: string, value: string) => setParams((current) => { const next = new URLSearchParams(current); if (value) next.set(key, value); else next.delete(key); if (key !== 'page') next.set('page', '1'); return next; });
   const { data, isLoading, isFetching, error, refetch } = useSearchBooksQuery({ q, category, sort, page });
   return <div className="container page-section">

@@ -10,7 +10,7 @@ const configSchema = z.object({
   APP_ORIGIN: z.string().url().default('http://localhost:5173'),
   PORT: z.coerce.number().int().positive().default(3000),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  OPEN_LIBRARY_CONTACT_EMAIL: z.string().email().default('estudiante@jala.test'),
+  OPEN_LIBRARY_CONTACT: z.string().url().default('https://github.com/Jottysng'),
 });
 
 export const config = configSchema.parse(process.env);

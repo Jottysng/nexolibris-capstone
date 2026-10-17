@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import { BookCard } from './BookCard';
@@ -17,5 +17,11 @@ describe('BookCard', () => {
   it('informa cuando no hay copias', () => {
     render(<MemoryRouter><BookCard book={{ ...book, availability: { total: 1, available: 0 } }} /></MemoryRouter>);
     expect(screen.getByText('Sin copias disponibles')).toBeVisible();
+  });
+
+  it('sustituye una portada que no puede cargarse', () => {
+    render(<MemoryRouter><BookCard book={{ ...book, coverId: 123, availability: { total: 1, available: 1 } }} /></MemoryRouter>);
+    fireEvent.error(screen.getByRole('img', { name: 'Portada de Libro de prueba' }));
+    expect(screen.getByRole('img', { name: 'Portada no disponible para Libro de prueba' })).toBeVisible();
   });
 });

@@ -5,7 +5,7 @@ import { AppError } from '../errors.js';
 import { cleanWorkId } from '../utils.js';
 
 const cache = new LRUCache<string, object>({ max: 250, ttl: 10 * 60 * 1000 });
-const headers = { 'User-Agent': `NexoLibris/1.0 (${config.OPEN_LIBRARY_CONTACT_EMAIL})`, Accept: 'application/json' };
+const headers = { 'User-Agent': `NexoLibris/1.0 (${config.OPEN_LIBRARY_CONTACT})`, Accept: 'application/json' };
 
 async function getJson<T>(url: URL): Promise<T> {
   const key = url.toString();

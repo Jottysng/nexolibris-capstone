@@ -1,5 +1,4 @@
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -11,7 +10,6 @@ import { config, isProduction } from './config.js';
 import { errorHandler, notFound } from './errors.js';
 import { verifyOrigin } from './middleware/origin.js';
 
-const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
@@ -27,7 +25,7 @@ app.use('/api/books', bookRoutes);
 app.use('/api', libraryRoutes);
 
 if (isProduction) {
-  const dist = path.resolve(currentDir, '../../dist');
+  const dist = path.resolve(process.cwd(), 'dist');
   app.use(express.static(dist, { index: false, maxAge: '1h' }));
   app.use((req, res, next) => {
     if (req.path.startsWith('/api/')) return next();

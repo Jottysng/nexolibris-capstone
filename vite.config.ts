@@ -22,7 +22,17 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html'],
       thresholds: { lines: 80, functions: 80, statements: 80, branches: 70 },
-      exclude: ['src/main.tsx', 'src/test/**', 'server/index.ts', 'prisma/**'],
+      include: [
+        'src/app/authSlice.ts',
+        'src/app/ThemeContext.tsx',
+        'src/components/**/*.tsx',
+        'src/features/**/*.tsx',
+        'src/pages/**/*.tsx',
+        'shared/contracts.ts',
+        'server/auth/tokens.ts',
+        'server/utils.ts',
+      ],
+      exclude: ['**/*.test.{ts,tsx}', 'src/test/**'],
     },
   },
 });

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { useRefreshMutation } from './app/api';
 import { sessionCleared, sessionReceived } from './app/authSlice';
@@ -21,13 +21,12 @@ const ReadingPage = lazy(() => import('./pages/ReadingPage'));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
 const AccountPage = lazy(() => import('./pages/AccountPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
-let sessionCheckStarted = false;
-
 export default function App() {
   const dispatch = useAppDispatch(); const [refresh] = useRefreshMutation();
+  const sessionCheckStarted = useRef(false);
   useEffect(() => {
-    if (sessionCheckStarted) return;
-    sessionCheckStarted = true;
+    if (sessionCheckStarted.current) return;
+    sessionCheckStarted.current = true;
     refresh().unwrap().then((session) => dispatch(sessionReceived(session))).catch(() => dispatch(sessionCleared()));
   }, [dispatch, refresh]);
   return <Suspense fallback={<LoadingState label="Preparando NexoLibris" />}><Routes><Route element={<AppLayout />}>

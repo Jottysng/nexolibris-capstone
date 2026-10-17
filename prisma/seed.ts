@@ -19,6 +19,11 @@ async function seed() {
     update: { name: 'Estudiante Demo', passwordHash },
     create: { name: 'Estudiante Demo', email: 'demo@nexolibris.test', passwordHash },
   });
+  const reader = await prisma.user.upsert({
+    where: { email: 'lector@nexolibris.test' },
+    update: { name: 'Lector Invitado', passwordHash },
+    create: { name: 'Lector Invitado', email: 'lector@nexolibris.test', passwordHash },
+  });
   for (const item of books) {
     const { totalCopies, ...book } = item;
     await prisma.bookSnapshot.upsert({
@@ -28,6 +33,7 @@ async function seed() {
     });
   }
   const firstBook = await prisma.bookSnapshot.findUniqueOrThrow({ where: { openLibraryKey: books[0].openLibraryKey } });
+  const reservedDemoBook = await prisma.bookSnapshot.findUniqueOrThrow({ where: { openLibraryKey: books[1].openLibraryKey } });
   await prisma.userBookState.upsert({
     where: { userId_bookId: { userId: user.id, bookId: firstBook.id } },
     update: { readingStatus: 'READING', wishlistedAt: new Date() },
@@ -38,6 +44,20 @@ async function seed() {
     userId: user.id, type: 'SYSTEM', title: 'Bienvenido a NexoLibris',
     message: 'Tu cuenta de demostración está lista para explorar el catálogo.',
   } });
+
+  const demoLoanId = '26b63462-d70f-4c8c-860b-e440d6c0d886';
+  const existingDemoLoan = await prisma.loan.findUnique({ where: { id: demoLoanId } });
+  if (!existingDemoLoan) {
+    const dueAt = new Date();
+    dueAt.setDate(dueAt.getDate() + 14);
+    await prisma.loan.create({ data: {
+      id: demoLoanId,
+      userId: reader.id,
+      bookId: reservedDemoBook.id,
+      dueAt,
+      status: 'ACTIVE',
+    } });
+  }
 }
 
 seed().finally(async () => prisma.$disconnect());

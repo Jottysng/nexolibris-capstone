@@ -8,5 +8,5 @@ export function ErrorState({ message, action }: { message: string; action?: Reac
   return <div className="state-panel state-error" role="alert"><AlertCircle aria-hidden="true" /><h2>No pudimos completar la solicitud</h2><p>{message}</p>{action}</div>;
 }
 export function EmptyState({ title, children }: { title: string; children: ReactNode }) {
-  return <div className="state-panel"><BookOpen aria-hidden="true" /><h2>{title}</h2><div>{children}</div></div>;
+  return <div className="state-panel" role="status"><BookOpen aria-hidden="true" /><h2>{title}</h2><div>{children}</div></div>;
 }

@@ -3,10 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSearchBooksQuery } from '../app/api';
 import { BookCard } from '../features/books/BookCard';
 import { SearchForm } from '../features/books/SearchForm';
+import { EmptyState, ErrorState, LoadingState } from '../components/States';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { data } = useSearchBooksQuery({ q: 'literatura latinoamericana', page: 1 });
+  const { data, isLoading, error, refetch } = useSearchBooksQuery({ q: 'literatura latinoamericana', page: 1 });
   return <>
     <section className="hero">
       <div className="container hero-grid">
@@ -20,7 +21,7 @@ export default function HomePage() {
       <article><Clock3 aria-hidden="true" /><h2>Reservas claras</h2><p>Consulta fechas de devolución y recibe avisos cuando haya una copia.</p></article>
     </section>
     <section className="container featured-section"><div className="section-heading"><div><h2>Lecturas destacadas</h2><p>Una selección para empezar a recorrer el catálogo.</p></div><Link className="text-link" to="/catalog">Ver catálogo <ArrowRight aria-hidden="true" /></Link></div>
-      <div className="book-grid">{data?.items.slice(0, 4).map((book) => <BookCard key={book.workId} book={book} />)}</div>
+      {isLoading ? <LoadingState label="Preparando las lecturas destacadas" /> : error ? <ErrorState message="No pudimos cargar la selección en este momento." action={<button className="button button-primary" onClick={refetch}>Reintentar</button>} /> : !data?.items.length ? <EmptyState title="La selección está en preparación"><p>Mientras tanto, puedes recorrer el catálogo completo.</p></EmptyState> : <div className="book-grid">{data.items.slice(0, 4).map((book) => <BookCard key={book.workId} book={book} />)}</div>}
     </section>
   </>;
 }
