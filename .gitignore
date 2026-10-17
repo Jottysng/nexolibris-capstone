@@ -1,0 +1,11 @@
+node_modules/
+dist/
+build-server/
+coverage/
+.env
+.env.local
+*.log
+.DS_Store
+.vite/
+prisma/generated/
+

@@ -1,0 +1,5 @@
+import { BookOpen, Database, HeartHandshake } from 'lucide-react';
+
+export default function AboutPage() {
+  return <div className="container page-section about-page"><div className="page-heading"><div><h1>Acerca de NexoLibris</h1><p>Una biblioteca universitaria que conecta el catálogo público con servicios de préstamo y seguimiento personal.</p></div></div><div className="about-grid"><article><BookOpen aria-hidden="true" /><h2>Catálogo abierto</h2><p>Los títulos, autores y portadas provienen de Open Library. NexoLibris normaliza esa información para presentar búsquedas claras en español.</p></article><article><Database aria-hidden="true" /><h2>Servicios propios</h2><p>La disponibilidad, los préstamos, las reservas y las listas pertenecen a esta aplicación. Ninguna acción modifica Open Library.</p></article><article><HeartHandshake aria-hidden="true" /><h2>Lectura accesible</h2><p>La interfaz funciona con teclado, ofrece foco visible y adapta su contenido a pantallas pequeñas sin ocultar acciones importantes.</p></article></div></div>;
+}

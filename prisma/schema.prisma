@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ReadingStatus {
+  TO_READ
+  READING
+  COMPLETED
+}
+
+enum LoanStatus {
+  ACTIVE
+  RETURNED
+}
+
+enum ReservationStatus {
+  WAITING
+  AVAILABLE
+  FULFILLED
+  CANCELLED
+  EXPIRED
+}
+
+enum NotificationType {
+  RESERVATION_AVAILABLE
+  LOAN_DUE_SOON
+  SYSTEM
+}
+
+model User {
+  id             String          @id @default(uuid()) @db.Uuid
+  name           String
+  email          String          @unique
+  passwordHash   String
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  sessions       Session[]
+  loans          Loan[]
+  reservations   Reservation[]
+  bookStates     UserBookState[]
+  notifications  Notification[]
+}
+
+model Session {
+  id            String    @id @default(uuid()) @db.Uuid
+  jti           String    @unique
+  userId        String    @db.Uuid
+  expiresAt     DateTime
+  revokedAt     DateTime?
+  replacedByJti String?
+  createdAt     DateTime  @default(now())
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model BookSnapshot {
+  id               String          @id @default(uuid()) @db.Uuid
+  openLibraryKey   String          @unique
+  title            String
+  description      String?
+  authors          Json
+  coverId          Int?
+  firstPublishYear Int?
+  subjects         Json
+  isbn             String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  inventory        Inventory?
+  loans            Loan[]
+  reservations     Reservation[]
+  userStates       UserBookState[]
+  notifications    Notification[]
+}
+
+model Inventory {
+  id          String       @id @default(uuid()) @db.Uuid
+  bookId      String       @unique @db.Uuid
+  totalCopies Int          @default(1)
+  book        BookSnapshot @relation(fields: [bookId], references: [id], onDelete: Cascade)
+}
+
+model Loan {
+  id         String       @id @default(uuid()) @db.Uuid
+  userId     String       @db.Uuid
+  bookId     String       @db.Uuid
+  borrowedAt DateTime     @default(now())
+  dueAt      DateTime
+  returnedAt DateTime?
+  status     LoanStatus   @default(ACTIVE)
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book       BookSnapshot @relation(fields: [bookId], references: [id], onDelete: Restrict)
+
+  @@index([userId, status])
+  @@index([bookId, status])
+}
+
+model Reservation {
+  id             String            @id @default(uuid()) @db.Uuid
+  userId         String            @db.Uuid
+  bookId         String            @db.Uuid
+  status         ReservationStatus @default(WAITING)
+  availableUntil DateTime?
+  notifiedAt     DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book           BookSnapshot      @relation(fields: [bookId], references: [id], onDelete: Restrict)
+
+  @@index([bookId, status, createdAt])
+  @@index([userId, status])
+}
+
+model UserBookState {
+  id            String         @id @default(uuid()) @db.Uuid
+  userId        String         @db.Uuid
+  bookId        String         @db.Uuid
+  readingStatus ReadingStatus?
+  wishlistedAt  DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book          BookSnapshot   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+  @@index([userId, readingStatus])
+}
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  bookId    String?          @db.Uuid
+  type      NotificationType
+  title     String
+  message   String
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book      BookSnapshot?    @relation(fields: [bookId], references: [id], onDelete: SetNull)
+
+  @@index([userId, readAt, createdAt])
+}

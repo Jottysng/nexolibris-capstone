@@ -1,0 +1,39 @@
+services:
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: nexolibris
+      POSTGRES_USER: nexolibris
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nexolibris_local}
+    volumes:
+      - nexolibris-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexolibris -d nexolibris"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  app:
+    build: .
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://nexolibris:${POSTGRES_PASSWORD:-nexolibris_local}@database:5432/nexolibris?schema=public
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-solo-desarrollo-access-cambie-esta-clave-2026}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-solo-desarrollo-refresh-cambie-esta-clave-2026}
+      JWT_ISSUER: nexolibris
+      JWT_AUDIENCE: nexolibris-web
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
+      OPEN_LIBRARY_CONTACT_EMAIL: ${OPEN_LIBRARY_CONTACT_EMAIL:-estudiante@jala.test}
+      PORT: 3000
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+volumes:
+  nexolibris-data:
